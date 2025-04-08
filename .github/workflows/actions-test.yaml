@@ -19,11 +19,10 @@ jobs:
       - name: Run a GitHub script
         uses: actions/github-script@v5
         with:
+          github-token: ${{steps.generate-token.outputs.token}}
           script: |
             const script = require('.github/workflows/pull-validate.js')
             script({github, context})
-        env:
-          GITHUB_TOKEN: ${{steps.generate-token.outputs.token}}
       - name: Approve a PR
         run: gh pr review --approve "$PR_URL"
         env:
