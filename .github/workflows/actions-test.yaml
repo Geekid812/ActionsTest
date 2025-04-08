@@ -1,0 +1,18 @@
+name: Test PR Workflow
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - '**.as'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/github-script@v5
+      - name: Run a GitHub script
+        with:
+          script: |
+            const script = require('./script.js')
+            console.log(script({github, context}))
