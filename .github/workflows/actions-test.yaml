@@ -3,16 +3,34 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
-      - '**.as'
+      - "**.as"
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/github-script@v5
+      - name: Generate an app token
+        id: generate-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
       - name: Run a GitHub script
+        uses: actions/github-script@v5
         with:
           script: |
-            const script = require('./script.js')
-            console.log(script({github, context}))
+            const script = require('.github/workflows/pull-validate.js')
+            script({github, context})
+        env:
+          GITHUB_TOKEN: ${{steps.generate-token.outputs.token}}
+      - name: Approve a PR
+        run: gh pr review --approve "$PR_URL"
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GITHUB_TOKEN: ${{steps.generate-token.outputs.token}}
+      - name: Merge a PR
+        run: gh pr merge --auto --rebase "$PR_URL"
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GITHUB_TOKEN: ${{steps.generate-token.outputs.token}}
