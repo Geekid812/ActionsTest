@@ -14,5 +14,5 @@ jobs:
         uses: actions/github-script@v5
         with:
           script: |
-            const script = require('./script.js')
+            const script = require('.github/workflows/pull-validate.js')
             console.log(script({github, context}))
