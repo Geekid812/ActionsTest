@@ -10,24 +10,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Generate an app token
+        id: generate-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
       - name: Run a GitHub script
         uses: actions/github-script@v5
         with:
           script: |
             const script = require('.github/workflows/pull-validate.js')
             script({github, context})
-  approve:
-    needs:
-     - build
-    runs-on: ubuntu-latest
-    steps:
+        env:
+          GITHUB_TOKEN: ${{steps.generate-token.outputs.token}}
       - name: Approve a PR
         run: gh pr review --approve "$PR_URL"
         env:
           PR_URL: ${{github.event.pull_request.html_url}}
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          GITHUB_TOKEN: ${{steps.generate-token.outputs.token}}
       - name: Merge a PR
         run: gh pr merge --auto --rebase "$PR_URL"
         env:
           PR_URL: ${{github.event.pull_request.html_url}}
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          GITHUB_TOKEN: ${{steps.generate-token.outputs.token}}
