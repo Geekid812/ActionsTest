@@ -16,3 +16,18 @@ jobs:
           script: |
             const script = require('.github/workflows/pull-validate.js')
             script({github, context})
+  approve:
+    needs:
+     - build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Approve a PR
+        run: gh pr review --approve "$PR_URL"
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      - name: Merge a PR
+        run: gh pr merge --auto --rebase "$PR_URL"
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
